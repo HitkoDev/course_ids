@@ -274,7 +274,7 @@ chisq.test(table(tmp$dropOUToriginal, tmp$Language), simulate.p.value = T)
 ## 	replicates)
 ## 
 ## data:  table(tmp$dropOUToriginal, tmp$Language)
-## X-squared = 4.6808, df = NA, p-value = 0.09145
+## X-squared = 4.6808, df = NA, p-value = 0.09645
 ```
 
 ```r
@@ -287,7 +287,7 @@ chisq.test(table(tmp$dropOUToriginal, tmp$Ethnicity), simulate.p.value = T)
 ## 	replicates)
 ## 
 ## data:  table(tmp$dropOUToriginal, tmp$Ethnicity)
-## X-squared = 1.4154, df = NA, p-value = 0.8456
+## X-squared = 1.4154, df = NA, p-value = 0.8626
 ```
 
 ```r
@@ -326,7 +326,7 @@ chisq.test(table(tmp$dropOUToriginal, tmp$Language), simulate.p.value = T)
 ## 	replicates)
 ## 
 ## data:  table(tmp$dropOUToriginal, tmp$Language)
-## X-squared = 5.8535, df = NA, p-value = 0.05597
+## X-squared = 5.8535, df = NA, p-value = 0.05247
 ```
 
 ```r
@@ -349,7 +349,7 @@ chisq.test(table(tmp$dropOUToriginal, tmp$Ethnicity), simulate.p.value = T)
 ## 	replicates)
 ## 
 ## data:  table(tmp$dropOUToriginal, tmp$Ethnicity)
-## X-squared = 0.72928, df = NA, p-value = 0.945
+## X-squared = 0.72928, df = NA, p-value = 0.947
 ```
 
 ```r
@@ -590,7 +590,7 @@ cat(sprintf("%.2f +/- %.3f\n", mean(y), stderr(y)))
 ```
 
 ```
-## 0.64 +/- 0.016
+## 0.66 +/- 0.016
 ```
 
 In this case MICE doesn't seem to have helped. In general, MICE is a very robust procedure and it performs really well in many different situations. The main issue with MICE is that it is computationally very intensive.

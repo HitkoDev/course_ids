@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 4 Web scraping | Introduction to data science</title>
   <meta name="description" content="Course notes" />
-  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 4 Web scraping | Introduction to data science" />
   <meta property="og:type" content="book" />
@@ -24,7 +24,7 @@
 <meta name="author" content="Slavko Žitnik and Erik Štrumbelj" />
 
 
-<meta name="date" content="2021-01-26" />
+<meta name="date" content="2021-10-07" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,7 +33,8 @@
   
 <link rel="prev" href="reproducibility.html"/>
 <link rel="next" href="summarizing-data-basics.html"/>
-<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -49,16 +50,14 @@
 
 
 
-
-<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
-<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
 
 
 <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 pre.sourceCode { margin: 0; }
@@ -67,16 +66,14 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -85,9 +82,9 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  {  }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+a.sourceLine::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -119,6 +116,7 @@ code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
+
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -359,11 +357,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <section class="normal" id="section-">
 <div id="scraping" class="section level1">
 <h1><span class="header-section-number">Chapter 4</span> Web scraping</h1>
-<p>Today there are more than <strong>3.7 billion Internet users</strong>, which almost <strong>50% of the entire population</strong> <span class="citation">(Internet World Stats <a href="#ref-InternetWorldStats" role="doc-biblioref">2017</a>)</span>. Taking into account all the existing Internet-enabled devices, we can estimate that approximatelly 30 billion devices are connected to the internet <span class="citation">(Deitel, Deitel, and Deitel <a href="#ref-deitel2011" role="doc-biblioref">2011</a>)</span>.</p>
-<p>In this chapter we focus on Web data extraction (Web scraping) - automatically extracting data from websites and storing it in a structured format. However, the broader field of Web information extraction also requires the knowledge of natural language processing techniques such as text pre-processing, information extraction (entity extraction, relationship extraction, coreference resolution), sentiment analysis, text categorization/classification and language models. Students that are interested in learning more about these techniques are encouraged to enrol in a Natural language processing course. For introduction to natural language techniques please see the Further reading references <span class="citation">(Liu <a href="#ref-liu2011" role="doc-biblioref">2011</a>)</span> (Chapter 11), <span class="citation">(Christopher, Prabhakar, and Hinrich <a href="#ref-manning2008" role="doc-biblioref">2008</a>)</span> (Chapters 12, 13, 15-17, 20), <span class="citation">(Aggarwal and Zhai <a href="#ref-aggarwal2012" role="doc-biblioref">2012</a>)</span> (Chapters 1-8, 12-14) or other specialized books on natural language processing.</p>
+<p>Today there are more than <strong>3.7 billion Internet users</strong>, which almost <strong>50% of the entire population</strong> <span class="citation">(Internet World Stats <a href="#ref-InternetWorldStats">2017</a>)</span>. Taking into account all the existing Internet-enabled devices, we can estimate that approximatelly 30 billion devices are connected to the internet <span class="citation">(Deitel, Deitel, and Deitel <a href="#ref-deitel2011">2011</a>)</span>.</p>
+<p>In this chapter we focus on Web data extraction (Web scraping) - automatically extracting data from websites and storing it in a structured format. However, the broader field of Web information extraction also requires the knowledge of natural language processing techniques such as text pre-processing, information extraction (entity extraction, relationship extraction, coreference resolution), sentiment analysis, text categorization/classification and language models. Students that are interested in learning more about these techniques are encouraged to enrol in a Natural language processing course. For introduction to natural language techniques please see the Further reading references <span class="citation">(Liu <a href="#ref-liu2011">2011</a>)</span> (Chapter 11), <span class="citation">(Christopher, Prabhakar, and Hinrich <a href="#ref-manning2008">2008</a>)</span> (Chapters 12, 13, 15-17, 20), <span class="citation">(Aggarwal and Zhai <a href="#ref-aggarwal2012">2012</a>)</span> (Chapters 1-8, 12-14) or other specialized books on natural language processing.</p>
 <div id="introduction-to-web-data-extraction" class="section level2">
 <h2><span class="header-section-number">4.1</span> Introduction to Web data extraction</h2>
-<p>Web data extraction systems <span class="citation">(Ferrara et al. <a href="#ref-ferrara2014" role="doc-biblioref">2014</a>)</span> are a broad class of software applications that focus on extracting data from Web sources. A Web data extraction system usually interacts with a Web source and extracts data stored in it: for example, if the source is an HTML Web page, the extracted content could consist of elements in the page as well as the full-text of the page itself. Eventually, extracted data might be post-processed, converted to the most convenient structured format and stored for further usage. The design and implementation of Web data extraction systems has been discussed from different perspectives and it leverages on scientific methods from different disciplines including machine learning, logic and natural language processing.</p>
+<p>Web data extraction systems <span class="citation">(Ferrara et al. <a href="#ref-ferrara2014">2014</a>)</span> are a broad class of software applications that focus on extracting data from Web sources. A Web data extraction system usually interacts with a Web source and extracts data stored in it: for example, if the source is an HTML Web page, the extracted content could consist of elements in the page as well as the full-text of the page itself. Eventually, extracted data might be post-processed, converted to the most convenient structured format and stored for further usage. The design and implementation of Web data extraction systems has been discussed from different perspectives and it leverages on scientific methods from different disciplines including machine learning, logic and natural language processing.</p>
 <p>Web data extraction systems find extensive use in a wide range of applications including the analysis of text-based documents available to a company (like e-mails, support forums, technical and legal documentation, and so on), Business and Competitive Intelligence, crawling of Social Web platforms, Bioinformatics and so on. The importance of Web data extraction systems depends on the fact that a large (and steadily growing) amount of data is continuously produced, shared and consumed online: Web data extraction systems allow us to efficiently collect these data with limited human effort. The availability and analysis of collected data is vital to understanding complex social, scientific and economic phenomena which generate the data. For example, collecting digital traces produced by users of social Web platforms such as Facebook, YouTube or Flickr is the key step to understand, model and predict human behavior.</p>
 <p>In commercial fields, the Web provides a wealth of public information. A company can probe the Web to acquire and analyze information about the activity of its competitors. This process is known as Competitive Intelligence and it is crucial to quickly identify the opportunities provided by the market, to anticipate the decisions of the competitors as well as to learn from their faults and successes.</p>
 <div id="the-challenges-of-web-data-extraction" class="section level3 unnumbered">
@@ -391,24 +389,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><em>Wrapper execution</em>: the wrapper runs and extracts data continuously.</li>
 <li><em>Wrapper maintenance</em>: the structure of data sources may change and the wrapper should be adapted accordingly.</li>
 </ol>
-<p>The first two steps of a wrapper life-cycle, generation and execution, might be implemented manually, for example, by defining and executing regular expressions over the HTML documents. Alternatively, which is the aim of Web data extraction systems, wrappers might be defined and executed by using an inductive approach – a process commonly known as wrapper induction <span class="citation">(Kushmerick, Weld, and Doorenbos <a href="#ref-kushmerick1997" role="doc-biblioref">1997</a>)</span>. Web wrapper induction is challenging because it requires high-level automation strategies. Induction methods try to uncover structures from an HTML document to form a robust wrapper. There exist also hybrid approaches that make it possible for users to generate and run wrappers semi-automatically by means of visual interfaces.</p>
+<p>The first two steps of a wrapper life-cycle, generation and execution, might be implemented manually, for example, by defining and executing regular expressions over the HTML documents. Alternatively, which is the aim of Web data extraction systems, wrappers might be defined and executed by using an inductive approach – a process commonly known as wrapper induction <span class="citation">(Kushmerick, Weld, and Doorenbos <a href="#ref-kushmerick1997">1997</a>)</span>. Web wrapper induction is challenging because it requires high-level automation strategies. Induction methods try to uncover structures from an HTML document to form a robust wrapper. There exist also hybrid approaches that make it possible for users to generate and run wrappers semi-automatically by means of visual interfaces.</p>
 <p>The third and final step of a wrapper’s life-cycle is maintenance: Web pages change their structure continuously and without forewarning. This might affect the correct functioning of a Web wrapper, whose definition is usually tightly bound to the structure of the Web pages adopted. Defining automated strategies for wrapper maintenance is vital to the correctness of extracted data and the robustness of Web data extraction platforms. Wrapper maintenance is especially important for long-term extractions. For the purposes of acquiring data in a typical data-science project, wrappers are mostly run once or over a short period of time. In such cases it is less likely that a Web site would change, so automation is not a priority and is typicaly not implemented.</p>
 <div id="html-dom" class="section level3">
 <h3><span class="header-section-number">4.2.1</span> HTML DOM</h3>
 <p>HTML is the predominant language for implementing Web pages and it is largely supported by the World Wide Web consortium. HTML pages can be regarded as a form of semi-structured data (even if less structured than other sources like XML documents) in which information follows a nested structure. HTML structure can be exploided in the design of suitable wrappers. While semi-structured information is often also available in non-HTML formats (for example, e-mail messages, code, system logs), extracting information of this type is the subject of more general information extraction and not the focus of this chapter.</p>
 <p>The backbone of a Web page is a Hypertext Markup Language (HTML) document which consists of HTML tags. According to the <a href="http://www.w3.org/DOM">Document Object Model</a> (DOM), every HTML tag is an object. Nested tags are called children of the enclosing tag. Generally we first parse a web page into a DOM tree representation. Then we specify extraction patterns as paths from the root of the DOM tree to the node containing the values to extract. Special languages such as XPath or XQuery support searching and querying elements of a DOM tree.</p>
 <p>Below we show a simple HTML Web page and its representation as a HTML DOM tree.</p>
-<div class="sourceCode" id="cb97"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb97-1"><a href="scraping.html#cb97-1"></a><span class="kw">&lt;html&gt;</span></span>
-<span id="cb97-2"><a href="scraping.html#cb97-2"></a>  <span class="kw">&lt;head&gt;</span></span>
-<span id="cb97-3"><a href="scraping.html#cb97-3"></a>    <span class="kw">&lt;title&gt;</span>My Title<span class="kw">&lt;/title&gt;</span></span>
-<span id="cb97-4"><a href="scraping.html#cb97-4"></a>  <span class="kw">&lt;/head&gt;</span></span>
-<span id="cb97-5"><a href="scraping.html#cb97-5"></a>  <span class="kw">&lt;body&gt;</span></span>
-<span id="cb97-6"><a href="scraping.html#cb97-6"></a>    <span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;&quot;</span><span class="kw">&gt;</span>My link<span class="kw">&lt;/a&gt;</span></span>
-<span id="cb97-7"><a href="scraping.html#cb97-7"></a>    <span class="kw">&lt;h1&gt;</span>My header<span class="kw">&lt;/h1&gt;</span></span>
-<span id="cb97-8"><a href="scraping.html#cb97-8"></a>  <span class="kw">&lt;/body&gt;</span></span>
-<span id="cb97-9"><a href="scraping.html#cb97-9"></a><span class="kw">&lt;/html&gt;</span></span></code></pre></div>
-<div class="figure" style="text-align: center"><span id="fig:htmlDOM"></span>
-<img src="data/WebDataExtraction/HTML_DOM.png" alt="DOM tree representation of the above HTML Web page."  />
+<div class="sourceCode" id="cb97"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb97-1" title="1"><span class="kw">&lt;html&gt;</span></a>
+<a class="sourceLine" id="cb97-2" title="2">  <span class="kw">&lt;head&gt;</span></a>
+<a class="sourceLine" id="cb97-3" title="3">    <span class="kw">&lt;title&gt;</span>My Title<span class="kw">&lt;/title&gt;</span></a>
+<a class="sourceLine" id="cb97-4" title="4">  <span class="kw">&lt;/head&gt;</span></a>
+<a class="sourceLine" id="cb97-5" title="5">  <span class="kw">&lt;body&gt;</span></a>
+<a class="sourceLine" id="cb97-6" title="6">    <span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;&quot;</span><span class="kw">&gt;</span>My link<span class="kw">&lt;/a&gt;</span></a>
+<a class="sourceLine" id="cb97-7" title="7">    <span class="kw">&lt;h1&gt;</span>My header<span class="kw">&lt;/h1&gt;</span></a>
+<a class="sourceLine" id="cb97-8" title="8">  <span class="kw">&lt;/body&gt;</span></a>
+<a class="sourceLine" id="cb97-9" title="9"><span class="kw">&lt;/html&gt;</span></a></code></pre></div>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:htmlDOM"></span>
+<img src="data/WebDataExtraction/HTML_DOM.png" alt="DOM tree representation of the above HTML Web page." width="744" />
 <p class="caption">
 Figure 4.1: DOM tree representation of the above HTML Web page.
 </p>
@@ -431,19 +429,19 @@ Figure 4.1: DOM tree representation of the above HTML Web page.
 <h3><span class="header-section-number">4.2.2</span> XPath</h3>
 <p>One of the main advantage of the adoption of the Document Object Model for Web Content Extraction is the possibility of exploiting the tools for XML languages (and HTML is to all effects a dialect of the XML). In particular, the XML Path Language (XPath) provides with a powerful syntax to succintly address specific elements of an XML document. XPath was also defined by the World Wide Web consortium, as was DOM.</p>
 <p>Below we provide an XML example to explain how XPath can be used to address elements of a Web page.</p>
-<div class="sourceCode" id="cb98"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb98-1"><a href="scraping.html#cb98-1"></a><span class="kw">&lt;persons&gt;</span></span>
-<span id="cb98-2"><a href="scraping.html#cb98-2"></a>  <span class="kw">&lt;person&gt;</span></span>
-<span id="cb98-3"><a href="scraping.html#cb98-3"></a>    <span class="kw">&lt;name&gt;</span>John<span class="kw">&lt;/name&gt;</span></span>
-<span id="cb98-4"><a href="scraping.html#cb98-4"></a>    <span class="kw">&lt;height</span><span class="ot"> unit=</span><span class="st">”cm”</span><span class="kw">&gt;</span>191<span class="kw">&lt;/height&gt;</span></span>
-<span id="cb98-5"><a href="scraping.html#cb98-5"></a>    <span class="kw">&lt;sport&gt;</span>Running<span class="kw">&lt;/sport&gt;</span></span>
-<span id="cb98-6"><a href="scraping.html#cb98-6"></a>    <span class="kw">&lt;sport&gt;</span>Cycling<span class="kw">&lt;/sport&gt;</span></span>
-<span id="cb98-7"><a href="scraping.html#cb98-7"></a>  <span class="kw">&lt;/person&gt;</span></span>
-<span id="cb98-8"><a href="scraping.html#cb98-8"></a>  <span class="kw">&lt;person&gt;</span></span>
-<span id="cb98-9"><a href="scraping.html#cb98-9"></a>    <span class="kw">&lt;name&gt;</span>Mandy<span class="kw">&lt;/name&gt;</span></span>
-<span id="cb98-10"><a href="scraping.html#cb98-10"></a>    <span class="kw">&lt;height&gt;</span>140<span class="kw">&lt;/height&gt;</span></span>
-<span id="cb98-11"><a href="scraping.html#cb98-11"></a>   <span class="kw">&lt;sport&gt;</span>Swimming<span class="kw">&lt;/sport&gt;</span></span>
-<span id="cb98-12"><a href="scraping.html#cb98-12"></a>  <span class="kw">&lt;/person&gt;</span></span>
-<span id="cb98-13"><a href="scraping.html#cb98-13"></a><span class="kw">&lt;/persons&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb98"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb98-1" title="1"><span class="kw">&lt;persons&gt;</span></a>
+<a class="sourceLine" id="cb98-2" title="2">  <span class="kw">&lt;person&gt;</span></a>
+<a class="sourceLine" id="cb98-3" title="3">    <span class="kw">&lt;name&gt;</span>John<span class="kw">&lt;/name&gt;</span></a>
+<a class="sourceLine" id="cb98-4" title="4">    <span class="kw">&lt;height</span><span class="ot"> unit=</span><span class="st">”cm”</span><span class="kw">&gt;</span>191<span class="kw">&lt;/height&gt;</span></a>
+<a class="sourceLine" id="cb98-5" title="5">    <span class="kw">&lt;sport&gt;</span>Running<span class="kw">&lt;/sport&gt;</span></a>
+<a class="sourceLine" id="cb98-6" title="6">    <span class="kw">&lt;sport&gt;</span>Cycling<span class="kw">&lt;/sport&gt;</span></a>
+<a class="sourceLine" id="cb98-7" title="7">  <span class="kw">&lt;/person&gt;</span></a>
+<a class="sourceLine" id="cb98-8" title="8">  <span class="kw">&lt;person&gt;</span></a>
+<a class="sourceLine" id="cb98-9" title="9">    <span class="kw">&lt;name&gt;</span>Mandy<span class="kw">&lt;/name&gt;</span></a>
+<a class="sourceLine" id="cb98-10" title="10">    <span class="kw">&lt;height&gt;</span>140<span class="kw">&lt;/height&gt;</span></a>
+<a class="sourceLine" id="cb98-11" title="11">   <span class="kw">&lt;sport&gt;</span>Swimming<span class="kw">&lt;/sport&gt;</span></a>
+<a class="sourceLine" id="cb98-12" title="12">  <span class="kw">&lt;/person&gt;</span></a>
+<a class="sourceLine" id="cb98-13" title="13"><span class="kw">&lt;/persons&gt;</span></a></code></pre></div>
 <p>There exist two possible ways to use XPath: (A) to identify a single element in the document tree, or (B) to address multiple occurrences of elements. We show some XPath queries against the above XML document:</p>
 <ul>
 <li><code>/persons/person/name</code> - Extract all elements in the provided path. The result is <code>&lt;name&gt;John&lt;/name&gt;</code> and <code>&lt;name&gt;Mandy&lt;/name&gt;</code>.</li>
@@ -453,7 +451,7 @@ Figure 4.1: DOM tree representation of the above HTML Web page.
 <li><code>//person[name="Mandy"]/sport/text()</code> - Extract contents of <em>sport</em> objects that are nested directly under <em>person</em> objects which contain a <em>name</em> object with value <em>Mandy</em>. The result is <code>Swimming</code>.</li>
 </ul>
 <p>The major weakness of XPath is its lack of flexibility: each XPath expression is strictly related to the structure of the Web page. However, this limitation has been partially mitigated with the introduction of relative path expressions. In general, even minor changes to the structure of a Web page might corrupt the correct functioning of an XPath expression defined on a previous version of the page. Still, due to the ease of use, many Web extraction libraries support the use of XPath in to addition of their own extraction API.</p>
-<p>Let us consider Web pages generated by a script (e.g. the information about a book in an e-commerce Web site). Now assume that the script undergoes some changes. We can expect that the tree structure of the HTML page generated by that script will change accordingly. To keep the Web data extraction process functional, we should update the expression every time the underlying page generation model changes. Such an operation would require a substantial human effort and would therefore be very costly. To this end, the concept of <em>wrapper robustness</em> was introduced. From the perspective of XPath the idea is to find, among all the XPath expressions capable of extracting the same information from a Web page, the one that is least influenced by potential changes in the structure of the page and such an expression identifies the more robust wrapper. In general, to make the entire Web data extraction process robust, we need tools allowing for measuring document similarity. Such a task can be accomplished by detecting structural variations in the DOM trees associated with the documents. Techniques called tree-matching strategies are a good candidate to detect similarities between two trees <span class="citation">(Tai <a href="#ref-treeMatching" role="doc-biblioref">1979</a>)</span>. The discussion of these techniques is outside the scope of this chapter.</p>
+<p>Let us consider Web pages generated by a script (e.g. the information about a book in an e-commerce Web site). Now assume that the script undergoes some changes. We can expect that the tree structure of the HTML page generated by that script will change accordingly. To keep the Web data extraction process functional, we should update the expression every time the underlying page generation model changes. Such an operation would require a substantial human effort and would therefore be very costly. To this end, the concept of <em>wrapper robustness</em> was introduced. From the perspective of XPath the idea is to find, among all the XPath expressions capable of extracting the same information from a Web page, the one that is least influenced by potential changes in the structure of the page and such an expression identifies the more robust wrapper. In general, to make the entire Web data extraction process robust, we need tools allowing for measuring document similarity. Such a task can be accomplished by detecting structural variations in the DOM trees associated with the documents. Techniques called tree-matching strategies are a good candidate to detect similarities between two trees <span class="citation">(Tai <a href="#ref-treeMatching">1979</a>)</span>. The discussion of these techniques is outside the scope of this chapter.</p>
 </div>
 <div id="modern-web-sites-and-js-frameworks" class="section level3">
 <h3><span class="header-section-number">4.2.3</span> Modern Web sites and JS frameworks</h3>
@@ -543,8 +541,8 @@ Figure 4.1: DOM tree representation of the above HTML Web page.
 <li>URL frontier: A list of URLs waiting to be parsed.</li>
 <li>Datastore: To store the data and additional metadata used by the crawler.</li>
 </ul>
-<div class="figure" style="text-align: center"><span id="fig:crawlerArchitecture"></span>
-<img src="data/WebDataExtraction/crawler.png" alt="Web crawler architecture."  />
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:crawlerArchitecture"></span>
+<img src="data/WebDataExtraction/crawler.png" alt="Web crawler architecture." width="1710" />
 <p class="caption">
 Figure 4.2: Web crawler architecture.
 </p>
@@ -640,7 +638,6 @@ Figure 4.2: Web crawler architecture.
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -659,6 +656,7 @@ gitbook.start({
 "weibo": false,
 "instapaper": false,
 "vk": false,
+"whatsapp": false,
 "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
 },
 "fontsettings": {
@@ -679,6 +677,10 @@ gitbook.start({
 "text": null
 },
 "download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
 "toc": {
 "collapse": "subsection"
 }
