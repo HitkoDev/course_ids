@@ -1,0 +1,61 @@
+on:
+  push:
+    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+
+      - name: Setup deps
+        run: sudo apt-get install -y libcurl4-openssl-dev pandoc python3-dev pandoc-citeproc
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@master
+        with:
+          r-version: '4.1.1'
+
+      - uses: r-lib/actions/setup-r-dependencies@v1
+        with:
+          extra-packages: |
+            factoextra
+            GPArotation
+            bookdown
+            reticulate
+            moments
+            ggcorrplot
+            tmvnsim
+            mnormt
+            psych
+            Rtsne
+            naniar
+            mice
+            caret
+            ggplot2
+            gbm
+
+      - name: Cache bookdown results
+        uses: actions/cache@v1
+        with:
+          path: _bookdown_files
+          key: bookdown-${{ hashFiles('**/*Rmd') }}
+          restore-keys: bookdown-
+
+      - name: Build site
+        run: |
+          R -e '
+          dat <- read.csv("./data/imputationDATASET.csv", stringsAsFactors = T)
+          tmp <- dat[,-c(5,6)]
+          tgt <- dat$dropOUToriginal
+          library(mice)
+          imputed_tmp <- mice(tmp, m = 50, seed = 0)
+          saveRDS(imputed_tmp, "./data/imputed_tmp.rds")'
+          R -e 'bookdown::clean_book(TRUE)'
+          R -e 'rm(list = ls())'
+          R -e "bookdown::render_book('index.Rmd', 'bookdown::gitbook')"
+
+      - uses: EndBug/add-and-commit@v7 # You can change this to use a specific version.
+        with:
+          add: 'docs'
